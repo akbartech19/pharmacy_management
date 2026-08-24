@@ -1,9 +1,8 @@
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnumClass
 from sqlalchemy import Column, String, Text, Integer, Float, ForeignKey, Enum, DateTime
-
+from datetime import datetime
 from database.config import Base
-
 
 class UserRole(PyEnumClass):
     ADMIN = "admin"
@@ -41,7 +40,7 @@ class Check(Base):
 
     id = Column(Integer, primary_key=True)
     check_num = Column(String, unique=True)
-    date_created = Column(DateTime, nullable=False)
+    date_created = Column(DateTime, default=datetime.now, nullable=False)
 
     cashier_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     cashier = relationship("User", back_populates="checks")
@@ -52,7 +51,7 @@ class CheckItem(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
-    amount = Column(Integer, default=0)
+    quantity = Column(Integer, default=0)
 
     drug_id = Column(Integer, ForeignKey("drug.id"), nullable=False)
     drug = relationship("Drug", back_populates="check_items")
