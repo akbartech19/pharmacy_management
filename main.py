@@ -1,16 +1,28 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 
 from database.models import Base, User
 from database.config import engine, get_db
 from database.schemes import UserData, UserUpdateData
 
 from router.drugs import drug_router
+from router.sale import check_route
 
 Base.metadata.create_all(engine)
 
 app = FastAPI()
 
 app.include_router(drug_router)
+app.include_router(check_route)
+
+app.add_middleware(
+    CORSMiddleware,     
+    allow_origins = ["*"],
+    allow_credentials = True,
+    allow_methods = ["POST", "PUT"],
+    allow_headers = ["*"],
+
+)   
 
 @app.get("/")
 def welcome():
@@ -52,7 +64,7 @@ def users_get(
 @app.delete("/users-delete/{account_id}")
 def user_delete(account_id: int, admin_id: int, db=Depends(get_db)):
     admin = db.query(User).filter(User.id == admin_id).first()
-        
+
     if not admin or admin.role.value != "admin":
         return {"success": False, "message": "Ruxsat yo'q"}
 
