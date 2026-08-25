@@ -1,4 +1,4 @@
-from typing import Optional, Text, List
+from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 from database.models import UserRole
@@ -16,8 +16,12 @@ class UserUpdateData(BaseModel):
     full_name: str | None = None 
     role : UserRole | None = None 
 
-class UserOut(UserData):
-    id : int
+class UserOut(BaseModel):
+    id: int
+    username: str
+    full_name: str | None = None
+    role: UserRole
+
 
 class DrugDataUpdate(BaseModel):
     id: int
@@ -34,31 +38,25 @@ class DrugData(BaseModel):
     base_price: float
     sell_price: float
 
-class DrugDataUpdate(BaseModel):
-    id : int
-    name : str| None = None
-    bace_price : float| None = None 
-    sell_price : float| None = None 
-    description : str| None = None
 
 class DrugEnter(BaseModel):
-    id : int
-    amount : int
+    drug_id : int
+    quantity : int
 
 class DrugOut(DrugData):
     id : int
 
 class CheckData(BaseModel):
-    cassir_id: int
+    cashier_id: int
 
 class ItemData(BaseModel):
     drug_id: int
     check_id : int
-    amount: int
+    quantity: int
 
 class ItemsOut(BaseModel):
     id : int
-    amount: int
+    quantity: int
     drug :DrugOut
 
 class CheckReturn(BaseModel):

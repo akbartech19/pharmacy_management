@@ -6,14 +6,14 @@ from database.config import engine, get_db
 from database.schemes import UserData, UserUpdateData
 
 from router.drugs import drug_router
-from router.sale import check_route
+from router.sale import check_router
 
 Base.metadata.create_all(engine)
 
 app = FastAPI()
 
 app.include_router(drug_router)
-app.include_router(check_route)
+app.include_router(check_router)
 
 app.add_middleware(
     CORSMiddleware,     
@@ -95,7 +95,7 @@ def account_update(
     if not user:
         return {"success": False, "message": "User topilmadi"}
 
-    for key, value in user_data.model_dump(exclude_unset=True).items():
+    for key, value in user_data.model_dump(exclude_unset=True, exclude={"id"}).items():
         setattr(user, key, value)
 
     db.commit()

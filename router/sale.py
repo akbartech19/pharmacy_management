@@ -2,19 +2,19 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from database.config import get_db
-from database.models import Check, CheckItem, Drug, User
+from database.models import Check, CheckItem, User
 
 from database.schemes import CheckReturn, ItemData, ItemsOut
 
 
-check_route = APIRouter(tags=["Kassa API"])
+check_router = APIRouter(tags=["Kassa API"])
 
-@check_route.post("/open-check/", response_model = CheckReturn)
+@check_router.post("/open-check/", response_model = CheckReturn)
 def open_check(_cashier_id:int, db = Depends(get_db)):
     cashier = db.query(User).get(_cashier_id)
 
     if cashier is None or cashier.role.value != "cashier":
-        raise HTTPException(status_code=401, detil = "Mumkin emas")
+        raise HTTPException(status_code=401, detail = "Mumkin emas")
     
     date = datetime.now()
     check = Check(
@@ -29,7 +29,7 @@ def open_check(_cashier_id:int, db = Depends(get_db)):
 
     return check
 
-@check_route.post("/add-item-to-check/", response_model = ItemsOut)
+@check_router.post("/add-item-to-check/", response_model = ItemsOut)
 def add_item(item_data:ItemData, _cashier_id:int, db = Depends(get_db)):
     cashier = db.query(User).get(_cashier_id)       
 
@@ -39,10 +39,10 @@ def add_item(item_data:ItemData, _cashier_id:int, db = Depends(get_db)):
     
     item = db.query(CheckItem).filter(CheckItem.check_id == item_data.check_id).filter(CheckItem.drug_id == item_data.drug_id).first()
     if item is not None :
-        item.amount += item_data.amount
+        item.quantity += item_data.quantity
         db.commit()
     else:
-        item = CheckItem(amount=item_data.amount, drug_id=item_data, check_id=item_data.check_id)
+        item = CheckItem(quantity=item_data.quantity, drug_id=item_data.drug_id, check_id=item_data.check_id)
 
         db.add(item)
         db.commit()
@@ -51,7 +51,7 @@ def add_item(item_data:ItemData, _cashier_id:int, db = Depends(get_db)):
     return item
 
 
-@check_route.post("/remove-item/{check_id}/{item_id}")
+@check_router.post("/remove-item/{check_id}/{item_id}")
 def remove_item(cashier_:int, check_id:int, item_id:int, db = Depends(get_db)):
     cashier=db.query(User).get(cashier_)
 
@@ -67,18 +67,18 @@ def remove_item(cashier_:int, check_id:int, item_id:int, db = Depends(get_db)):
     if item is None:
         raise HTTPException(status_code=404, detail= "check item topilmadi")
     
-    if item.amount <= 1:
+    if item.quantity <= 1:
         db.delete(item)
         db.commit()
         return {"message": "Item Deleted"}
     else:
-        item.amount -= 1
+        item.quantity -= 1
         db.commit()
         db.refresh(item)
 
     return item
 
-@check_route.get("/sales/", response_model = List[CheckReturn])
+@check_router.get("/sales/", response_model = List[CheckReturn])
 def get_checks(admin_id:int, db=Depends(get_db)):
     cashier = db.query(User).get(admin_id)
 

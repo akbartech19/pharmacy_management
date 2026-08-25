@@ -51,7 +51,7 @@ def drug_update(drug_data:DrugDataUpdate, admin_id:int, db = Depends(get_db)):
     if drug is None:
         raise HTTPException(status_code=404, detail = "Drug not found ! ") 
 
-    new_data = drug_data.model_dump(exclude_unset=True)            
+    new_data = drug_data.model_dump(exclude_unset=True, exclude={"id"})            
     
     for key, value in new_data.items():
         setattr(drug, key, value)
@@ -59,7 +59,7 @@ def drug_update(drug_data:DrugDataUpdate, admin_id:int, db = Depends(get_db)):
     db.commit()
     db.refresh(drug)
 
-    return {"message": "Umpdate", "success": True, "data": new_data}
+    return {"message": "Umpdate", "success": True,  "data": drug}
 
 @drug_router.get("/drugs/")
 def drug_fetch(user_id:int, db = Depends(get_db)):
@@ -68,22 +68,22 @@ def drug_fetch(user_id:int, db = Depends(get_db)):
         raise HTTPException(status_code=401, detail="unauthorized access !")
         
     drugs = db.query(Drug).all()
-    print(drugs)
+
     return {"message": "Derugs list!", "success": True, "data": drugs}
 
 
 @drug_router.post("/drug-amount-update/")
-def drug_amount_udate(drug_amount_update:DrugEnter, admin_id:int, db = Depends(get_db)):
+def drug_amount_update(drug_amount_update:DrugEnter, admin_id:int, db = Depends(get_db)):
     admin_user = db.query(User).get(admin_id)
 
     if admin_user is None or admin_user.role.value != "admin":
         raise HTTPException(status_code=401, detail = "unauthorized access !")
     
-    drug = db.query(Drug).get(drug_amount_update.id)
+    drug = db.query(Drug).get(drug_amount_update.drug_id)
     if drug is None:
         raise HTTPException(status_code=404, detail="Drug is not found with this id !")
     
-    drug.aamount += drug_amount_update.amount
+    drug.amount += drug_amount_update.quantity
     db.commit()
     db.refresh(drug)
 
@@ -97,7 +97,7 @@ def low_amount_drug(number:int, admin_id:int, db = Depends(get_db)):
     if admin_user is None or admin_user.role.value != "admin":
         raise HTTPException(status_code=401, detail=("unauthorized access !"))
     
-    drugs = db.query(Drug).filter(Drug.amount <= number)
+    drugs = db.query(Drug).filter(Drug.amount <= number).all()
 
     return {"message": "Filtered !", "success": True, "data":drugs}
 
