@@ -117,6 +117,3 @@ def drug_delete(drug_id:int, admin_id:int, db = Depends(get_db)):
     db.commit()
     return {"message": "deleted", "success": True}
 
-
-    
-

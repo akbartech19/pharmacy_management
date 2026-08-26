@@ -65,5 +65,20 @@ class CheckReturn(BaseModel):
     date_created: datetime
     cashier: UserOut
     items : List[ItemsOut]= []
+    total_sales: float
+    total_profit: float
+
+class SaleSummary(BaseModel):
+    check_id: int
+    check_num: str
+    date_created: datetime
+    total_sales: float
+    total_profit: float
+
+class SalesStatistics(BaseModel):
+    period: str
+    total_checks: int
+    total_sales: float
+    total_profit: float
 
 
